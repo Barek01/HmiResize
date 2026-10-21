@@ -1,0 +1,8 @@
+# Programmes compilés (build.bat)
+*.exe
+*.pdb
+
+# Rapports (--log)
+*.log
+rapport*.txt
+report*.txt
