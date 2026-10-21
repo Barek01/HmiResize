@@ -57,9 +57,11 @@ d'autoriser l'accès Openness : répondre **Oui à tout**.
 
 1. Lancer `HmiResizeGui.exe`.
 2. Choisir la résolution d'origine et la résolution cible.
-3. **Simulation** : affiche ce qui serait modifié, sans rien changer.
-4. **Adapter les vues** : fait l'adaptation (une confirmation est demandée).
-5. Vérifier dans TIA, puis **Compiler l'IHM** et **Enregistrer le projet**.
+3. **Dry run** (simulation) : affiche ce qui serait modifié, sans rien changer.
+4. **Resize screens** : fait l'adaptation (une confirmation est demandée).
+5. Vérifier dans TIA, puis **Compile HMI** (compiler) et **Save project** (enregistrer).
+
+L'interface et les messages du programme sont en anglais.
 
 Chaque bouton lance `HmiResize.exe` avec les options choisies ; le rapport s'affiche en
 direct et la commande lancée est rappelée, ce qui permet de la réutiliser en ligne de commande.

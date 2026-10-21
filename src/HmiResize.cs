@@ -74,7 +74,7 @@ namespace HmiResize
                 string a = args[i].ToLowerInvariant();
                 Func<string> next = () =>
                 {
-                    if (i + 1 >= args.Length) throw new ArgumentException("Valeur manquante après " + args[i]);
+                    if (i + 1 >= args.Length) throw new ArgumentException("Missing value after " + args[i]);
                     return args[++i];
                 };
                 switch (a)
@@ -82,11 +82,11 @@ namespace HmiResize
                     case "--from":
                         string f = next();
                         if (!f.Equals("auto", StringComparison.OrdinalIgnoreCase) && !TryParseResolution(f, out o.FromW, out o.FromH))
-                            throw new ArgumentException("Résolution source invalide : " + f);
+                            throw new ArgumentException("Invalid source resolution: " + f);
                         break;
                     case "--to":
                         string t = next();
-                        if (!TryParseResolution(t, out o.ToW, out o.ToH)) throw new ArgumentException("Résolution cible invalide : " + t);
+                        if (!TryParseResolution(t, out o.ToW, out o.ToH)) throw new ArgumentException("Invalid target resolution: " + t);
                         break;
                     case "--mode": o.Mode = next().ToLowerInvariant(); break;
                     case "--font": o.Font = next().ToLowerInvariant(); break;
@@ -105,52 +105,52 @@ namespace HmiResize
                     case "--pid": o.Pid = int.Parse(next()); break;
                     case "--log": o.LogFile = next(); break;
                     case "-h": case "--help": case "/?": return null;
-                    default: throw new ArgumentException("Option inconnue : " + args[i]);
+                    default: throw new ArgumentException("Unknown option: " + args[i]);
                 }
             }
-            if (o.Mode != "stretch" && o.Mode != "uniform") throw new ArgumentException("--mode doit valoir stretch ou uniform");
-            if (!o.ListOnly && o.Dump == null && !o.CompileOnly && !o.SaveOnly && o.ToW == 0) throw new ArgumentException("--to est obligatoire (ex. --to MTP1200 ou --to 1280x800)");
+            if (o.Mode != "stretch" && o.Mode != "uniform") throw new ArgumentException("--mode must be stretch or uniform");
+            if (!o.ListOnly && o.Dump == null && !o.CompileOnly && !o.SaveOnly && o.ToW == 0) throw new ArgumentException("--to is required (e.g. --to MTP1200 or --to 1280x800)");
             return o;
         }
 
         public static void PrintHelp()
         {
             Console.WriteLine(@"
-HmiResize - adapte les vues d'un IHM WinCC Unified à une nouvelle résolution (TIA Portal Openness)
+HmiResize - resizes the screens of a WinCC Unified HMI to a new resolution (TIA Portal Openness)
 
-Usage :
-  HmiResize.exe --to <résolution> [options]
+Usage:
+  HmiResize.exe --to <resolution> [options]
   HmiResize.exe --list
 
-Résolution : LARGEURxHAUTEUR (ex. 1280x800) ou nom de pupitre :
+Resolution: WIDTHxHEIGHT (e.g. 1280x800) or panel name:
   MTP400=480x272  MTP700=800x480  MTP1000/MTP1200=1280x800  MTP1500/1900/2200=1920x1080
 
-Options :
-  --from <rés.|auto>  Résolution d'origine des vues (défaut : auto = taille de vue la plus fréquente)
-  --to <rés.>         Résolution cible (obligatoire)
-  --mode stretch      Étire X et Y indépendamment pour remplir tout l'écran (défaut)
-  --mode uniform      Même facteur en X et Y (min des deux), garde les proportions
-  --font auto         Polices x min(facteurX, facteurY) (défaut)
-  --font none         Ne touche pas aux polices
-  --font <facteur>    Facteur de police imposé, ex. 1.5
-  --lines             Met aussi à l'échelle les épaisseurs de traits et bordures
-  --no-parts          Ne touche pas aux sous-éléments des contrôles (colonnes, polices internes...)
-  --no-scripts        Ne modifie pas les coordonnées écrites en chiffres dans les OpenScreenInPopup
-  --device <nom>      IHM à traiter si le projet en contient plusieurs (joker * ? accepté)
-  --screens <a;b*>    Ne traite que ces vues (séparées par ;, joker * ? accepté)
-  --exclude <a;b*>    Vues à ne pas traiter
-  --dry-run           Simulation : affiche ce qui serait fait, ne modifie rien
-  --save              Enregistre le projet à la fin
-  --pid <n>           Processus TIA Portal à utiliser s'il y en a plusieurs ouverts
-  --log <fichier>     Écrit aussi le rapport dans un fichier
-  --list              Liste les IHM et leurs vues (taille) puis quitte
-  --compile           Compile le logiciel IHM et affiche les erreurs, puis quitte
-  --save-only         Enregistre le projet ouvert, puis quitte
-  --dump <a;b*>       Affiche tous les objets et propriétés de ces vues (diagnostic), puis quitte
+Options:
+  --from <res|auto>   Source resolution of the screens (default: auto = most common screen size)
+  --to <res>          Target resolution (required)
+  --mode stretch      Scale X and Y independently to fill the whole display (default)
+  --mode uniform      Same factor for X and Y (smaller of both), keeps proportions
+  --font auto         Fonts x min(factorX, factorY) (default)
+  --font none         Leave fonts unchanged
+  --font <factor>     Fixed font factor, e.g. 1.5
+  --lines             Also scale line and border widths
+  --no-parts          Do not touch control sub-elements (columns, inner fonts...)
+  --no-scripts        Do not rescale numeric coordinates in OpenScreenInPopup calls
+  --device <name>     HMI to process when the project contains several (wildcards * ? allowed)
+  --screens <a;b*>    Only process these screens (separated by ;, wildcards * ? allowed)
+  --exclude <a;b*>    Screens to skip
+  --dry-run           Simulation: shows what would be done, modifies nothing
+  --save              Save the project at the end
+  --pid <n>           TIA Portal process to use when several are running
+  --log <file>        Also write the report to a file
+  --list              List HMIs and their screens (size), then exit
+  --compile           Compile the HMI software and show errors, then exit
+  --save-only         Save the open project, then exit
+  --dump <a;b*>       Print all items and properties of these screens (diagnostics), then exit
 
-Toutes les modifications sont faites dans une seule transaction : un seul Ctrl+Z
-(Annuler) dans TIA Portal suffit pour revenir en arrière.
-ATTENTION : relancer le programme sur des vues déjà adaptées les agrandit à nouveau.
+All changes are made in a single transaction: one Ctrl+Z (Undo) in TIA Portal
+reverts everything.
+WARNING: running the program again on screens already resized enlarges them again.
 ");
         }
     }
@@ -172,7 +172,7 @@ ATTENTION : relancer le programme sur des vues déjà adaptées les agrandit à 
             }
             catch (Exception ex)
             {
-                Console.Error.WriteLine("Erreur : " + ex.Message);
+                Console.Error.WriteLine("Error: " + ex.Message);
                 Options.PrintHelp();
                 return 2;
             }
@@ -185,9 +185,11 @@ ATTENTION : relancer le programme sur des vues déjà adaptées les agrandit à 
             catch (Exception ex)
             {
                 Console.Error.WriteLine();
-                Console.Error.WriteLine("ERREUR : " + ex.Message);
-                if (ex.GetType().Name.Contains("Security"))
-                    Console.Error.WriteLine("-> Vérifiez que l'utilisateur Windows est membre du groupe \"Siemens TIA Openness\" (puis fermer/rouvrir la session).");
+                Console.Error.WriteLine("ERROR: " + ex.Message);
+                if (ex.GetType().Name.Contains("Security") && ex.Message.Contains("timed out"))
+                    Console.Error.WriteLine("-> TIA Portal is waiting for you to allow Openness access: answer \"Yes to all\" in the TIA Portal dialog (it may be behind other windows), then run again.");
+                else if (ex.GetType().Name.Contains("Security"))
+                    Console.Error.WriteLine("-> Check that the Windows user is a member of the \"Siemens TIA Openness\" group (then sign out and sign in again).");
                 Console.Error.WriteLine(ex.ToString());
                 return 1;
             }
@@ -282,12 +284,12 @@ ATTENTION : relancer le programme sur des vues déjà adaptées les agrandit à 
         {
             // --- Connexion à TIA Portal ------------------------------------------------------
             IList<TiaPortalProcess> procs = TiaPortal.GetProcesses();
-            if (procs.Count == 0) throw new Exception("Aucun TIA Portal ouvert.");
+            if (procs.Count == 0) throw new Exception("No TIA Portal instance is running.");
             TiaPortalProcess proc;
             if (opt.Pid != 0)
             {
                 proc = procs.FirstOrDefault(p => p.Id == opt.Pid);
-                if (proc == null) throw new Exception("Aucun TIA Portal avec le PID " + opt.Pid);
+                if (proc == null) throw new Exception("No TIA Portal with PID " + opt.Pid);
             }
             else
             {
@@ -296,37 +298,37 @@ ATTENTION : relancer le programme sur des vues déjà adaptées les agrandit à 
                 else if (procs.Count == 1) proc = procs[0];
                 else
                 {
-                    Log("Plusieurs TIA Portal sont ouverts, précisez --pid :");
-                    foreach (TiaPortalProcess p in procs) Log("  PID {0}  {1}", p.Id, p.ProjectPath != null ? p.ProjectPath.FullName : "(pas de projet)");
+                    Log("Several TIA Portal instances are running, use --pid:");
+                    foreach (TiaPortalProcess p in procs) Log("  PID {0}  {1}", p.Id, p.ProjectPath != null ? p.ProjectPath.FullName : "(no project)");
                     return 2;
                 }
             }
-            Log("Connexion à TIA Portal (PID {0})... Acceptez la demande d'accès Openness dans TIA si elle s'affiche.", proc.Id);
+            Log("Connecting to TIA Portal (PID {0})... Accept the Openness access request in TIA Portal if it appears.", proc.Id);
 
             using (TiaPortal portal = proc.Attach())
             {
                 Project project = portal.Projects.FirstOrDefault();
-                if (project == null) throw new Exception("Aucun projet ouvert dans TIA Portal.");
-                Log("Projet : {0}", project.Name);
+                if (project == null) throw new Exception("No project is open in TIA Portal.");
+                Log("Project: {0}", project.Name);
 
                 if (opt.SaveOnly)
                 {
                     project.Save();
-                    Log("Projet enregistré.");
+                    Log("Project saved.");
                     return 0;
                 }
 
                 List<KeyValuePair<Device, HmiSoftware>> hmis = FindUnifiedHmis(project).ToList();
-                if (hmis.Count == 0) throw new Exception("Aucun IHM WinCC Unified trouvé dans le projet.");
+                if (hmis.Count == 0) throw new Exception("No WinCC Unified HMI found in the project.");
 
                 if (opt.ListOnly)
                 {
                     foreach (var h in hmis)
                     {
                         Log("");
-                        Log("IHM \"{0}\"  (appareil \"{1}\", {2})", h.Value.Name, h.Key.Name, h.Key.TypeIdentifier);
+                        Log("HMI \"{0}\"  (device \"{1}\", {2})", h.Value.Name, h.Key.Name, h.Key.TypeIdentifier);
                         foreach (var s in AllScreens(h.Value))
-                            Log("   {0,-40} {1}x{2}  ({3} objets)  [{4}]", s.Value.Name, s.Value.Width, s.Value.Height, s.Value.ScreenItems.Count, s.Key);
+                            Log("   {0,-40} {1}x{2}  ({3} items)  [{4}]", s.Value.Name, s.Value.Width, s.Value.Height, s.Value.ScreenItems.Count, s.Key);
                     }
                     return 0;
                 }
@@ -348,11 +350,11 @@ ATTENTION : relancer le programme sur des vues déjà adaptées les agrandit à 
 
                 if (opt.Device != null)
                     hmis = hmis.Where(h => Wildcard.IsMatch(h.Value.Name, opt.Device) || Wildcard.IsMatch(h.Key.Name, opt.Device)).ToList();
-                if (hmis.Count == 0) throw new Exception("Aucun IHM ne correspond à --device " + opt.Device);
+                if (hmis.Count == 0) throw new Exception("No HMI matches --device " + opt.Device);
                 if (hmis.Count > 1)
                 {
-                    Log("Le projet contient plusieurs IHM Unified, précisez --device :");
-                    foreach (var h in hmis) Log("  {0}  (appareil {1})", h.Value.Name, h.Key.Name);
+                    Log("The project contains several Unified HMIs, use --device:");
+                    foreach (var h in hmis) Log("  {0}  (device {1})", h.Value.Name, h.Key.Name);
                     return 2;
                 }
 
@@ -361,7 +363,7 @@ ATTENTION : relancer le programme sur des vues déjà adaptées les agrandit à 
                     .Where(s => opt.Screens == null || Wildcard.IsMatchAny(s.Name, opt.Screens))
                     .Where(s => opt.Exclude == null || !Wildcard.IsMatchAny(s.Name, opt.Exclude))
                     .ToList();
-                if (screens.Count == 0) throw new Exception("Aucune vue à traiter.");
+                if (screens.Count == 0) throw new Exception("No screen to process.");
 
                 // --- Résolution d'origine ------------------------------------------------------
                 if (opt.FromW == 0)
@@ -369,9 +371,9 @@ ATTENTION : relancer le programme sur des vues déjà adaptées les agrandit à 
                     var top = AllScreens(hmi).Select(s => s.Value).GroupBy(s => new { W = (int)s.Width, H = (int)s.Height })
                         .OrderByDescending(g => g.Count()).First().Key;
                     opt.FromW = top.W; opt.FromH = top.H;
-                    Log("Résolution d'origine détectée : {0}x{1} (taille de vue la plus fréquente)", opt.FromW, opt.FromH);
+                    Log("Detected source resolution: {0}x{1} (most common screen size)", opt.FromW, opt.FromH);
                     if (opt.FromW == opt.ToW && opt.FromH == opt.ToH)
-                        throw new Exception("Les vues font déjà " + opt.ToW + "x" + opt.ToH + ". Si leur contenu est encore à l'ancienne taille, indiquez --from (ex. --from MTP700).");
+                        throw new Exception("Screens are already " + opt.ToW + "x" + opt.ToH + ". If their content still has the old size, set --from (e.g. --from MTP700).");
                 }
 
                 sx = (double)opt.ToW / opt.FromW;
@@ -381,16 +383,16 @@ ATTENTION : relancer le programme sur des vues déjà adaptées les agrandit à 
                 if (opt.Font == "auto") sf = sk;
                 else if (opt.Font == "none") sf = 1;
                 else if (!double.TryParse(opt.Font.Replace(',', '.'), NumberStyles.Float, CultureInfo.InvariantCulture, out sf) || sf <= 0)
-                    throw new Exception("--font invalide : " + opt.Font);
+                    throw new Exception("Invalid --font: " + opt.Font);
 
-                Log("IHM : {0}   {1}x{2} -> {3}x{4}   facteurs X={5:0.####} Y={6:0.####} police={7:0.####}  mode={8}{9}",
-                    hmi.Name, opt.FromW, opt.FromH, opt.ToW, opt.ToH, sx, sy, sf, opt.Mode, opt.DryRun ? "   [SIMULATION]" : "");
-                Log("{0} vue(s) à traiter.", screens.Count);
+                Log("HMI: {0}   {1}x{2} -> {3}x{4}   factors X={5:0.####} Y={6:0.####} font={7:0.####}  mode={8}{9}",
+                    hmi.Name, opt.FromW, opt.FromH, opt.ToW, opt.ToH, sx, sy, sf, opt.Mode, opt.DryRun ? "   [DRY RUN]" : "");
+                Log("{0} screen(s) to process.", screens.Count);
                 CollectScreenWindows(hmi);
                 foreach (HmiScreen s in screens) processedScreens.Add(s.Name);
 
                 // --- Traitement, dans une transaction (un seul "Annuler" dans TIA) ---------------
-                using (ExclusiveAccess access = portal.ExclusiveAccess("HmiResize : adaptation des vues à " + opt.ToW + "x" + opt.ToH + "..."))
+                using (ExclusiveAccess access = portal.ExclusiveAccess("HmiResize: resizing screens to " + opt.ToW + "x" + opt.ToH + "..."))
                 {
                     Transaction tr = opt.DryRun ? null : access.Transaction(project, "HmiResize " + opt.FromW + "x" + opt.FromH + " -> " + opt.ToW + "x" + opt.ToH);
                     try
@@ -398,9 +400,9 @@ ATTENTION : relancer le programme sur des vues déjà adaptées les agrandit à 
                         int n = 0;
                         foreach (HmiScreen screen in screens)
                         {
-                            if (access.IsCancellationRequested) throw new OperationCanceledException("Annulé depuis TIA Portal : aucune modification conservée.");
+                            if (access.IsCancellationRequested) throw new OperationCanceledException("Cancelled from TIA Portal: no change kept.");
                             n++;
-                            access.Text = string.Format("HmiResize : vue {0}/{1} - {2}", n, screens.Count, screen.Name);
+                            access.Text = string.Format("HmiResize: screen {0}/{1} - {2}", n, screens.Count, screen.Name);
                             ProcessScreen(screen);
                         }
                         if (tr != null) tr.CommitOnDispose();
@@ -412,22 +414,22 @@ ATTENTION : relancer le programme sur des vues déjà adaptées les agrandit à 
                 }
 
                 Log("");
-                Log("Terminé : {0} vue(s), {1} objet(s) adapté(s), {2} objet(s) ignoré(s), {3} propriété(s) modifiée(s), {4} appel(s) OpenScreenInPopup recalé(s){5}.",
-                    screens.Count, itemsDone, itemsSkipped, propsChanged, scriptsChanged, opt.DryRun ? " (simulation, rien n'a été modifié)" : "");
+                Log("Done: {0} screen(s), {1} item(s) resized, {2} item(s) skipped, {3} property change(s), {4} OpenScreenInPopup call(s) rescaled{5}.",
+                    screens.Count, itemsDone, itemsSkipped, propsChanged, scriptsChanged, opt.DryRun ? " (dry run, nothing was modified)" : "");
                 if (warnings.Count > 0)
                 {
-                    Log("{0} avertissement(s) à vérifier à la main :", warnings.Count);
+                    Log("{0} warning(s) to check manually:", warnings.Count);
                     foreach (string w in warnings.Distinct()) Log("  - " + w);
                 }
 
                 if (opt.Save && !opt.DryRun)
                 {
                     project.Save();
-                    Log("Projet enregistré.");
+                    Log("Project saved.");
                 }
                 else if (!opt.DryRun)
                 {
-                    Log("Projet NON enregistré (Ctrl+Z dans TIA pour annuler, ou --save pour enregistrer automatiquement).");
+                    Log("Project NOT saved (Ctrl+Z in TIA Portal to undo, or --save to save automatically).");
                 }
             }
             return 0;
@@ -525,16 +527,16 @@ ATTENTION : relancer le programme sur des vues déjà adaptées les agrandit à 
             if (fullScreen) { nw = opt.ToW; nh = opt.ToH; }
             else if (windowSizes.TryGetValue(screen.Name, out win) && win[0] == w && win[1] == h)
             {
-                nw = win[2]; nh = win[3]; kind = " (taille de sa fenêtre de vue)";
+                nw = win[2]; nh = win[3]; kind = " (size of its screen window)";
             }
             else if (windowSizesBySize.TryGetValue(w + "x" + h, out win) && win != null)
             {
-                nw = win[2]; nh = win[3]; kind = " (taille d'une fenêtre de vue de même taille)";
+                nw = win[2]; nh = win[3]; kind = " (size of a screen window of the same size)";
             }
-            else { nw = Round(w * sx); nh = Round(h * sy); kind = " (vue partielle / pop-up)"; }
+            else { nw = Round(w * sx); nh = Round(h * sy); kind = " (partial screen / pop-up)"; }
 
             Log("");
-            Log("Vue \"{0}\" : {1}x{2} -> {3}x{4}{5}, {6} objet(s)", screen.Name, w, h, nw, nh, kind, screen.ScreenItems.Count);
+            Log("Screen \"{0}\": {1}x{2} -> {3}x{4}{5}, {6} item(s)", screen.Name, w, h, nw, nh, kind, screen.ScreenItems.Count);
 
             if (!opt.DryRun && (nw != w || nh != h))
             {
@@ -552,7 +554,7 @@ ATTENTION : relancer le programme sur des vues déjà adaptées les agrandit à 
                 catch (Exception ex)
                 {
                     itemsSkipped++;
-                    Warn("{0}/{1} : erreur {2}", screen.Name, ItemName(item), ex.Message);
+                    Warn("{0}/{1}: error {2}", screen.Name, ItemName(item), ex.Message);
                 }
             }
         }
@@ -597,7 +599,7 @@ ATTENTION : relancer le programme sur des vues déjà adaptées les agrandit à 
             else
             {
                 geometry = false;
-                Warn("{0} ({1}) : pas de position connue, non déplacé", name, item.GetType().Name);
+                Warn("{0} ({1}): no known position, not moved", name, item.GetType().Name);
             }
 
             if (opt.ScaleLines)
@@ -617,17 +619,17 @@ ATTENTION : relancer le programme sur des vues déjà adaptées les agrandit à 
 
             // Sous-éléments des contrôles (colonnes de tableaux, barres d'outils, polices internes...)
             if (opt.ScaleParts && !NoPartsTypes.Contains(type)) ScaleParts(item, 0);
-            else if (opt.ScaleParts) Warn("{0} ({1}) : seul le cadre est adapté (polices et colonnes internes à vérifier)", name, type);
+            else if (opt.ScaleParts) Warn("{0} ({1}): only the frame is resized (check inner fonts and columns)", name, type);
 
             CheckDynamizations(item, name);
             CheckScripts(item, name);
 
             if (type == "HmiFaceplateContainer")
-                Warn("{0} : conteneur de faceplate redimensionné ; le contenu du type de faceplate n'est pas modifié (vérifier la propriété \"Adaption\")", name);
+                Warn("{0}: faceplate container resized; the faceplate type content is not modified (check the \"Adaption\" property)", name);
             else if (type == "HmiScreenWindow" && !processedScreens.Contains(SafeAttr(item, "Screen")))
-                Warn("{0} : fenêtre de vue redimensionnée, mais la vue \"{1}\" qu'elle affiche n'est pas traitée", name, SafeAttr(item, "Screen"));
+                Warn("{0}: screen window resized, but the screen \"{1}\" it shows is not processed", name, SafeAttr(item, "Screen"));
             else if (type == "HmiGraphicView")
-                Warn("{0} : vue graphique étirée ; vérifier le mode d'étirement de l'image", name);
+                Warn("{0}: graphic view stretched; check the image stretch mode", name);
 
             return geometry;
         }
@@ -820,7 +822,7 @@ ATTENTION : relancer le programme sur des vues déjà adaptées les agrandit à 
                         RewritePopupCalls(line, out c1, out nonLiteral);
                         if (nonLiteral == 0) continue;   // coordonnées en chiffres déjà correctes (ex. 0, 0)
                     }
-                    Warn("{0} : script à vérifier : {1}", name, line.Trim());
+                    Warn("{0}: script to check: {1}", name, line.Trim());
                 }
             }
         }
@@ -901,7 +903,7 @@ ATTENTION : relancer le programme sur des vues déjà adaptées les agrandit à 
                 string prop = null;
                 try { prop = Convert.ToString(d.GetAttribute("PropertyName")); } catch { }
                 if (prop != null && GeometryProps.Contains(prop))
-                    Warn("{0} : la propriété {1} est dynamisée ({2}) ; les valeurs calculées par le tag/script ne sont pas adaptées",
+                    Warn("{0}: property {1} is dynamized ({2}); values computed by the tag/script are not rescaled",
                         name, prop, SafeAttr(d, "DynamizationType"));
             }
         }
@@ -909,7 +911,7 @@ ATTENTION : relancer le programme sur des vues déjà adaptées les agrandit à 
         // Compile le logiciel IHM et affiche erreurs / avertissements
         void Compile(HmiSoftware hmi)
         {
-            Log("Compilation de \"{0}\"...", hmi.Name);
+            Log("Compiling \"{0}\"...", hmi.Name);
             // Le service de compilation est porté par l'élément d'appareil qui contient le logiciel IHM
             Siemens.Engineering.Compiler.ICompilable c = null;
             SoftwareContainer sc = hmi.Parent as SoftwareContainer;
@@ -920,9 +922,9 @@ ATTENTION : relancer le programme sur des vues déjà adaptées les agrandit à 
                 if (sp != null) c = sp.GetService<Siemens.Engineering.Compiler.ICompilable>();
                 o = o.Parent;
             }
-            if (c == null) { Log("  Compilation non disponible via Openness pour cet IHM."); return; }
+            if (c == null) { Log("  Compilation not available through Openness for this HMI."); return; }
             Siemens.Engineering.Compiler.CompilerResult r = c.Compile();
-            Log("  Résultat : {0}  ({1} erreur(s), {2} avertissement(s))", r.State, r.ErrorCount, r.WarningCount);
+            Log("  Result: {0}  ({1} error(s), {2} warning(s))", r.State, r.ErrorCount, r.WarningCount);
             LogCompilerMessages(r.Messages, "    ");
         }
 
@@ -945,7 +947,7 @@ ATTENTION : relancer le programme sur des vues déjà adaptées les agrandit à 
         void DumpScreen(HmiScreen screen)
         {
             Log("");
-            Log("=== Vue \"{0}\" {1}x{2}", screen.Name, screen.Width, screen.Height);
+            Log("=== Screen \"{0}\" {1}x{2}", screen.Name, screen.Width, screen.Height);
             foreach (IEngineeringObject item in screen.ScreenItems.Cast<IEngineeringObject>())
                 DumpObject(item, "  ", 0);
         }

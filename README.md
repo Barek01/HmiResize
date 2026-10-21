@@ -14,8 +14,6 @@ in a single operation that can be undone with one Ctrl+Z.
 
 ![HmiResize user interface](docs/screenshot.png)
 
-*(The user interface and console messages are in French.)*
-
 ## Features
 
 - Attaches to the **TIA Portal instance already running** (no XML export/import).
@@ -57,9 +55,12 @@ access: answer **Yes to all**.
 
 1. Start `HmiResizeGui.exe`.
 2. Choose the source and target resolutions.
-3. **Simulation**: shows what would change, without modifying anything.
-4. **Adapter les vues** (resize screens): performs the resize (asks for confirmation).
-5. Check the result in TIA Portal, then **Compiler l'IHM** (compile) and **Enregistrer le projet** (save).
+3. **Dry run**: shows what would change, without modifying anything.
+4. **Resize screens**: performs the resize (asks for confirmation).
+5. Check the result in TIA Portal, then **Compile HMI** and **Save project**.
+
+Each button runs `HmiResize.exe` with the selected options; the report is shown live and
+the command line is echoed, so it can be reused from a script.
 
 ### Command line
 

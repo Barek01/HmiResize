@@ -31,7 +31,7 @@ namespace HmiResize
 
         public MainForm()
         {
-            Text = "HmiResize - adaptation des vues WinCC Unified";
+            Text = "HmiResize - WinCC Unified screen resizer";
             Font = new Font("Segoe UI", 9f);
             ClientSize = new Size(900, 640);
             MinimumSize = new Size(760, 520);
@@ -50,7 +50,7 @@ namespace HmiResize
             grid.ColumnStyles.Add(new ColumnStyle(SizeType.AutoSize));
             grid.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50));
 
-            cbFrom.Items.Add("auto (taille de vue la plus fréquente)");
+            cbFrom.Items.Add("auto (most common screen size)");
             cbFrom.Items.AddRange(Resolutions);
             cbFrom.SelectedIndex = 2;   // MTP700
             cbTo.Items.AddRange(Resolutions);
@@ -59,21 +59,21 @@ namespace HmiResize
             cbFont.SelectedIndex = 0;
             foreach (ComboBox c in new[] { cbFrom, cbTo, cbFont }) c.Dock = DockStyle.Fill;
 
-            rbStretch.Text = "Étirer (remplit tout l'écran)"; rbStretch.Checked = true; rbStretch.AutoSize = true;
-            rbUniform.Text = "Proportions gardées"; rbUniform.AutoSize = true;
+            rbStretch.Text = "Stretch (fill the whole display)"; rbStretch.Checked = true; rbStretch.AutoSize = true;
+            rbUniform.Text = "Keep proportions"; rbUniform.AutoSize = true;
             var modes = new FlowLayoutPanel { AutoSize = true, Dock = DockStyle.Fill, WrapContents = false, Margin = new Padding(0) };
             modes.Controls.Add(rbStretch); modes.Controls.Add(rbUniform);
 
-            AddRow(grid, 0, "Résolution d'origine :", cbFrom, "Résolution cible :", cbTo);
-            AddRow(grid, 1, "Mode :", modes, "Facteur police :", cbFont);
-            AddRow(grid, 2, "IHM (si plusieurs) :", txtDevice, "Vues à traiter :", txtScreens);
-            AddRow(grid, 3, "", new Label { Text = "Vide = toutes. Joker * ? et ; entre les noms.", AutoSize = true, ForeColor = Color.Gray, Anchor = AnchorStyles.Left },
-                    "Vues à exclure :", txtExclude);
+            AddRow(grid, 0, "Source resolution:", cbFrom, "Target resolution:", cbTo);
+            AddRow(grid, 1, "Mode:", modes, "Font factor:", cbFont);
+            AddRow(grid, 2, "HMI (if several):", txtDevice, "Screens to process:", txtScreens);
+            AddRow(grid, 3, "", new Label { Text = "Empty = all. Wildcards * ? and ; between names.", AutoSize = true, ForeColor = Color.Gray, Anchor = AnchorStyles.Left },
+                    "Screens to exclude:", txtExclude);
 
-            chkParts.Text = "Colonnes et polices internes des contrôles"; chkParts.Checked = true;
-            chkScripts.Text = "Recaler les coordonnées des pop-ups (scripts)"; chkScripts.Checked = true;
-            chkLines.Text = "Épaisseurs de traits et bordures";
-            chkSave.Text = "Enregistrer le projet après l'adaptation";
+            chkParts.Text = "Control columns and inner fonts"; chkParts.Checked = true;
+            chkScripts.Text = "Rescale pop-up coordinates (scripts)"; chkScripts.Checked = true;
+            chkLines.Text = "Line and border widths";
+            chkSave.Text = "Save the project after resizing";
             var checks = new FlowLayoutPanel { AutoSize = true, Dock = DockStyle.Fill, Margin = new Padding(0, 6, 0, 0) };
             foreach (CheckBox c in new[] { chkParts, chkScripts, chkLines, chkSave }) { c.AutoSize = true; c.Margin = new Padding(3, 3, 16, 3); checks.Controls.Add(c); }
             grid.Controls.Add(checks, 0, 4);
@@ -82,14 +82,14 @@ namespace HmiResize
 
             // --- Boutons ----------------------------------------------------------------------
             var bar = new FlowLayoutPanel { AutoSize = true, Dock = DockStyle.Top, Margin = new Padding(0, 8, 0, 8) };
-            bar.Controls.Add(MakeButton("Lister les vues", (s, e) => Run("--list")));
-            bar.Controls.Add(MakeButton("Simulation", (s, e) => Run(BuildArgs(true))));
-            Button apply = MakeButton("Adapter les vues", (s, e) => Apply());
+            bar.Controls.Add(MakeButton("List screens", (s, e) => Run("--list")));
+            bar.Controls.Add(MakeButton("Dry run", (s, e) => Run(BuildArgs(true))));
+            Button apply = MakeButton("Resize screens", (s, e) => Apply());
             apply.Font = new Font(Font, FontStyle.Bold);
             bar.Controls.Add(apply);
-            bar.Controls.Add(MakeButton("Compiler l'IHM", (s, e) => Run("--compile" + DeviceArg())));
-            bar.Controls.Add(MakeButton("Enregistrer le projet", (s, e) => Run("--save-only")));
-            Button clear = new Button { Text = "Effacer", AutoSize = true, Padding = new Padding(6, 2, 6, 2) };
+            bar.Controls.Add(MakeButton("Compile HMI", (s, e) => Run("--compile" + DeviceArg())));
+            bar.Controls.Add(MakeButton("Save project", (s, e) => Run("--save-only")));
+            Button clear = new Button { Text = "Clear", AutoSize = true, Padding = new Padding(6, 2, 6, 2) };
             clear.Click += (s, e) => txtOut.Clear();
             bar.Controls.Add(clear);
             root.Controls.Add(bar, 0, 1);
@@ -99,8 +99,8 @@ namespace HmiResize
             txtOut.Dock = DockStyle.Fill; txtOut.Font = new Font("Consolas", 9f); txtOut.BackColor = Color.White;
             root.Controls.Add(txtOut, 0, 2);
 
-            if (!File.Exists(exe)) Append("HmiResize.exe introuvable à côté de cette interface : " + exe);
-            else Append("Le projet doit être ouvert dans TIA Portal. Commencez par \"Simulation\", puis \"Adapter les vues\".");
+            if (!File.Exists(exe)) Append("HmiResize.exe not found next to this program: " + exe);
+            else Append("The project must be open in TIA Portal. Start with \"Dry run\", then \"Resize screens\".");
         }
 
         static void AddRow(TableLayoutPanel grid, int row, string l1, Control c1, string l2, Control c2)
@@ -153,17 +153,17 @@ namespace HmiResize
 
         void Apply()
         {
-            string msg = "Adapter les vues de " + cbFrom.Text + " vers " + cbTo.Text + " ?\n\n" +
-                         "Un seul Ctrl+Z dans TIA Portal annule toute l'opération.\n" +
-                         "Attention : relancer sur des vues déjà adaptées les agrandit à nouveau.";
-            if (MessageBox.Show(this, msg, "Confirmer l'adaptation", MessageBoxButtons.OKCancel, MessageBoxIcon.Question) == DialogResult.OK)
+            string msg = "Resize the screens from " + cbFrom.Text + " to " + cbTo.Text + "?\n\n" +
+                         "A single Ctrl+Z in TIA Portal reverts the whole operation.\n" +
+                         "Warning: running it again on screens already resized enlarges them again.";
+            if (MessageBox.Show(this, msg, "Confirm resize", MessageBoxButtons.OKCancel, MessageBoxIcon.Question) == DialogResult.OK)
                 Run(BuildArgs(false));
         }
 
         void Run(string args)
         {
             if (running != null) return;
-            if (!File.Exists(exe)) { Append("HmiResize.exe introuvable : " + exe); return; }
+            if (!File.Exists(exe)) { Append("HmiResize.exe not found: " + exe); return; }
 
             Append("");
             Append("> HmiResize.exe " + args);
@@ -182,7 +182,7 @@ namespace HmiResize
             p.ErrorDataReceived += (s, e) => { if (e.Data != null) BeginInvoke((Action)(() => Append(e.Data))); };
             p.Exited += (s, e) => BeginInvoke((Action)(() =>
             {
-                Append(p.ExitCode == 0 ? "[terminé]" : "[terminé avec le code " + p.ExitCode + "]");
+                Append(p.ExitCode == 0 ? "[done]" : "[done, exit code " + p.ExitCode + "]");
                 p.Dispose();
                 running = null;
                 SetBusy(false);
@@ -208,7 +208,7 @@ namespace HmiResize
         protected override void OnFormClosing(FormClosingEventArgs e)
         {
             if (running != null &&
-                MessageBox.Show(this, "Une opération est en cours. Fermer quand même ?", "HmiResize", MessageBoxButtons.YesNo, MessageBoxIcon.Warning) != DialogResult.Yes)
+                MessageBox.Show(this, "An operation is running. Close anyway?", "HmiResize", MessageBoxButtons.YesNo, MessageBoxIcon.Warning) != DialogResult.Yes)
                 e.Cancel = true;
             base.OnFormClosing(e);
         }
