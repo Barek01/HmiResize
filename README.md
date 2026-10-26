@@ -138,6 +138,7 @@ between versions, so the code may need adjustments.
 - `src/HmiResize.cs`: engine (C# 5 / .NET Framework 4.8)
 - `src/HmiResizeGui.cs`: Windows Forms GUI
 - `build.bat`: builds both programs
+- `CLAUDE.md`: notes for developers and AI coding agents (architecture, Openness pitfalls, conventions)
 
 ## Disclaimer
 

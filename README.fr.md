@@ -144,6 +144,7 @@ version à l'autre : des ajustements du code peuvent être nécessaires.
 - `src/HmiResize.cs` : le moteur (C# 5 / .NET Framework 4.8)
 - `src/HmiResizeGui.cs` : l'interface graphique (Windows Forms)
 - `build.bat` : compile les deux programmes
+- `CLAUDE.md` : notes pour les développeurs et les agents IA (architecture, pièges d'Openness, conventions)
 
 ## Avertissement
 
